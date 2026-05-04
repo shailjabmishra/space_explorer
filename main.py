@@ -24,3 +24,4 @@ while True:
         exit(0)
     else:
         print("Invalid choice. Please try again.")
+print("Goodbye!")
