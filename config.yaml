@@ -1,0 +1,23 @@
+app:
+  name: Space Explorer
+  version: 1.0.0
+
+nasa:
+  apod_url: https://api.nasa.gov/planetary/apod
+  api_key: DEMO_KEY
+
+planets:
+  - name: Mercury
+    distance_from_sun_km: 57900000
+    moons: 0
+    fun_fact: "A year on Mercury is just 88 Earth days!"
+
+  - name: Earth
+    distance_from_sun_km: 149600000
+    moons: 1
+    fun_fact: "Earth is the only known planet with life!"
+
+  - name: Mars
+    distance_from_sun_km: 227900000
+    moons: 2
+    fun_fact: "Mars has the tallest volcano in the solar system!"
