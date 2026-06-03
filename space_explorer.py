@@ -89,5 +89,17 @@ def create_table(conn):
           )
         """
         )
+        conn.commit()
+
+def seed_planets_from_config(conn , planets:list):
+    with conn.cursor as cur:
+        cur.executemany(
+            """
+            INSERT  INTO planets (id,name,distance_from_sun_km,moons,fun_fact,visited)
+            VALUES(%s,%s,%s,%s,%s)
+            """,
+            planets
+        )
+        conn.commit()
 
 main()
