@@ -1,10 +1,20 @@
+# Space Explorer Configuration — Level 2 (Database Edition)
+
 app:
-  name: Space Explorer
-  version: 1.0.0
+  name: "Space Explorer"
+  version: "2.0.0"
+  author: "Your Name Here"   # <-- Change this!
 
 nasa:
-  apod_url: https://api.nasa.gov/planetary/apod
-  api_key: DEMO_KEY
+  apod_url: "https://api.nasa.gov/planetary/apod"
+  api_key: "DEMO_KEY"
+
+database:
+  host: localhost
+  port: 5432
+  dbname: spacedb
+  user: explorer
+  password: space123
 
 planets:
   - name: Mercury
@@ -12,12 +22,37 @@ planets:
     moons: 0
     fun_fact: "A year on Mercury is just 88 Earth days!"
 
+  - name: Venus
+    distance_from_sun_km: 108200000
+    moons: 0
+    fun_fact: "Venus spins backwards compared to most planets!"
+
   - name: Earth
     distance_from_sun_km: 149600000
     moons: 1
-    fun_fact: "Earth is the only known planet with life!"
+    fun_fact: "Earth is the only known planet with life... so far!"
 
   - name: Mars
     distance_from_sun_km: 227900000
     moons: 2
     fun_fact: "Mars has the tallest volcano in the solar system!"
+
+  - name: Jupiter
+    distance_from_sun_km: 778500000
+    moons: 95
+    fun_fact: "Jupiter's Great Red Spot is a storm raging for 400 years!"
+
+  - name: Saturn
+    distance_from_sun_km: 1432000000
+    moons: 146
+    fun_fact: "Saturn's rings are made mostly of ice and rock!"
+
+  - name: Uranus
+    distance_from_sun_km: 2867000000
+    moons: 28
+    fun_fact: "Uranus rotates on its side with a 98 degree axial tilt!"
+
+  - name: Neptune
+    distance_from_sun_km: 4515000000
+    moons: 16
+    fun_fact: "Winds on Neptune reach 2100 km/h — fastest in the solar system!"
