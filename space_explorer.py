@@ -43,7 +43,7 @@ def main():
                 print(f"Error occurred while fetching NASA APOD: {e}")
         elif user_input == "3":
             print("Listing all planets...")
-            for planet in planets:
+            for planet in CONFIG['planets']:
                 print(planet["name"])
         elif user_input == "q":
             print("Quitting...")
@@ -60,8 +60,34 @@ def get_connection(db_config:dict):
             user = db_config['user'],
             password = db_config['password']
         )
+        return connection
     except Exception as e:
         print("Connection failed",e.__traceback__)
+    
 
+def create_table(conn):
+    with conn.cursor as cur:
+        cur.execute(""" 
+            CREATE TABLE IF NOT EXISTS planets (
+        id        SERIAL PRIMARY KEY,
+        name      VARCHAR(100) UNIQUE NOT NULL,
+        distance_from_sun_km BIGINT,
+        moons     INTEGER DEFAULT 0,
+        fun_fact  TEXT,
+        visited   BOOLEAN DEFAULT FALSE
+        )
+                    """
+                )
+        cur.execute(
+            """
+                CREATE TABLE IF NOT EXISTS apod_history (
+        id         SERIAL PRIMARY KEY,
+        title      VARCHAR(255),
+        date       VARCHAR(20),
+        url        TEXT,
+        fetched_at TIMESTAMP DEFAULT NOW()
+          )
+        """
+        )
 
 main()
