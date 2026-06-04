@@ -148,5 +148,38 @@ def delete_planet(conn, planet_name: str) -> bool:
             (planet_name,)
         )
         return cur.rowcount>0
+    conn.commit()
+
+def save_apod(conn,apod_data: dict):
+    with conn.cursor as cur:
+        cur.executemany(
+            """
+            INSERT  INTO apod_history (id,title,date,url)
+            VALUES(%s,%s,%s,%s)
+            """,
+            apod_data
+        )
+        conn.commit()
+
+def get_apod_history(conn) -> list:
+    with conn.cursor as cur:
+        cur.execute(
+            """
+            select id , title,date,url,fetched_at
+            from apod_history
+            order by fetched_at desc
+            """
+        )
+        rows = cur.fetchall()
+        apod_list = [
+            {
+                "id" :rows[0],
+                "title" : rows[1],
+                "date" : rows[2],
+                "url" : rows[3],
+                "fetched_at" : rows[4]
+            }
+        ]
+    return apod_list
 
 main()
