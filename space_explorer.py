@@ -136,5 +136,17 @@ def mark_planet_visited(conn, planet_name: str) -> bool:
         if cur.rowcount>0:
             return True
         return False
+    conn.commit()
+
+def delete_planet(conn, planet_name: str) -> bool:
+    with conn.cursor as cur:
+        cur.execute(
+            """
+            DELETE from planets
+            where planet_name =%s
+            """,
+            (planet_name,)
+        )
+        return cur.rowcount>0
 
 main()
