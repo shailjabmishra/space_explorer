@@ -102,4 +102,31 @@ def seed_planets_from_config(conn , planets:list):
         )
         conn.commit()
 
+def get_all_planets(conn)-> list:
+    planets_list = []
+    dct = {}
+    for planet in conn.planets:
+        dct['id'] = conn.planets['id']
+        dct['name'] = conn.planets['name']
+        dct['distance_from_sun_km'] = conn.planets['distance_from_sun_km']
+        dct['moons'] = conn.planets['moons']
+        dct['fun_fact'] = conn.planets['fun_fact']
+        dct['visited'] = conn.planets['visited']
+        planets_list.append(dct)
+    return planets_list
+
+def mark_planet_visited(conn, planet_name: str) -> bool:
+    with conn.cursor as cur:
+        cur.execute(
+            """
+            UPDATE planets 
+            set visited = TRUE
+            where planet_name = %s
+            """,
+            (planet_name,)
+        )
+        if cur.rowcount>0:
+            return True
+        return False
+
 main()
