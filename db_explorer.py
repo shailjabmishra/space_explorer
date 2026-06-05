@@ -48,13 +48,20 @@ def create_table(conn):
 
 def seed_planets_from_config(conn , planets:list):
     with conn.cursor() as cur:
-        cur.executemany(
-            """
-            INSERT  INTO planets (id,name,distance_from_sun_km,moons,fun_fact,visited)
-            VALUES(%s,%s,%s,%s,%s)
-            """,
-            planets
-        )
+        for planet in planets:
+            cur.execute(
+                """
+                INSERT  INTO planets (name,distance_from_sun_km,moons,fun_fact)
+                VALUES(%s,%s,%s,%s)
+                on CONFLICT (name) do nothing
+                """,
+                (
+                planet["name"],
+                planet["distance_from_sun_km"],
+                planet["moons"],
+                planet["fun_fact"]
+                )
+            )
         conn.commit()
 
 def get_all_planets(conn)-> list:
@@ -66,16 +73,19 @@ def get_all_planets(conn)-> list:
             """
         )
         rows = cur.fetchall()
-        planets_list = [
-            {
-                "id" : rows[0],
-                "name":rows[1],
-                "distance_from_sun_km":rows[2],
-                "moons":rows[3],
-                "fun_fact":rows[4],
-                "visited":rows[5]
-            }
-        ]
+        print(rows)
+        planets_list=[]
+        for row in rows:
+            planets_list.append(
+                {
+                    "id" : row[0],
+                    "name":row[1],
+                    "distance_from_sun_km":row[2],
+                    "moons":row[3],
+                    "fun_fact":row[4],
+                    "visited":row[5]
+                }
+            )
     return planets_list
 
 
@@ -85,35 +95,42 @@ def mark_planet_visited(conn, planet_name: str) -> bool:
             """
             UPDATE planets 
             set visited = TRUE
-            where planet_name = %s
+            where name = %s
             """,
             (planet_name,)
         )
+        print(planet_name)
+        conn.commit()
         if cur.rowcount>0:
             return True
         return False
-    conn.commit()
+        
 
 def delete_planet(conn, planet_name: str) -> bool:
     with conn.cursor() as cur:
         cur.execute(
             """
             DELETE from planets
-            where planet_name =%s
+            where name =%s
             """,
             (planet_name,)
         )
+        conn.commit()
         return cur.rowcount>0
-    conn.commit()
+    
 
 def save_apod(conn,apod_data: dict):
     with conn.cursor() as cur:
-        cur.executemany(
+        cur.execute(
             """
-            INSERT  INTO apod_history (id,title,date,url)
-            VALUES(%s,%s,%s,%s)
+            INSERT  INTO apod_history (title,date,url)
+            VALUES(%s,%s,%s)
+           
             """,
-            apod_data
+            (
+             apod_data['title'],
+             apod_data['date'],
+             apod_data['url'])
         )
         conn.commit()
 
@@ -127,16 +144,41 @@ def get_apod_history(conn) -> list:
             """
         )
         rows = cur.fetchall()
+        print(rows,"hello")
         apod_list = [
             {
-                "id" :rows[0],
-                "title" : rows[1],
-                "date" : rows[2],
-                "url" : rows[3],
-                "fetched_at" : rows[4]
+                "id" :rows[0][0],
+                "title" : rows[0][1],
+                "date" : rows[0][2],
+                "url" : rows[0][3],
+                "fetched_at" : rows[0][4]
             }
         ]
     return apod_list
+
+def get_apod():
+    # try:
+
+    #     with urllib.request.urlopen("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY") as response:
+    #         data = response.read().decode("utf-8")  # bytes → string
+    #         apod_data = json.loads(data)
+    #         print(apod_data)
+    #         return apod_data
+    # except Exception as e:
+    #             print(f"Error occurred while fetching NASA APOD: {e}")
+    #             return None
+    apod_data = {
+    "date": "2026-06-05",
+    "title": "The Milky Way Over the Himalayas",
+    "explanation": "A stunning view of the Milky Way galaxy stretching across the night sky above the Himalayan mountain range. The image combines multiple exposures to reveal faint galactic structures and distant stars.",
+    "url": "https://apod.nasa.gov/apod/image/2606/milkyway_himalayas.jpg",
+    "hdurl": "https://apod.nasa.gov/apod/image/2606/milkyway_himalayas_hd.jpg",
+    "media_type": "image",
+    "service_version": "v1",
+    "copyright": "NASA / Example Photographer"
+    }
+    return apod_data
+    
 
 def main():
     def read_config():
@@ -147,13 +189,12 @@ def main():
     db_config = CONFIG['database']
     planets = CONFIG['planets']
     conn = None
-    with urllib.request.urlopen("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY") as response:
-        data = response.read().decode("utf-8")  # bytes → string
-        apod_data = json.loads(data)
+    
     try:
         conn = get_connection(db_config)
         create_table(conn)
         seed_planets_from_config(conn,planets)
+        apod_data=get_apod()
         save_apod(conn,apod_data)
 
         while True:
@@ -178,16 +219,14 @@ def main():
                         print(f"Fun fact: {planet['fun_fact']}")
             elif user_input == "2":
                 print("Getting NASA Astronomy Picture of the Day...")
-                try:
-                    
-                    print(f"Title: {apod_data['title']}")
-                    print(f"date: {apod_data['date']}")
-                    print(f"Explanation: {apod_data['explanation'][:300]}")
-                except Exception as e:
-                    print(f"Error occurred while fetching NASA APOD: {e}")
+                get_apod()
+                print(f"Title: {apod_data['title']}")
+                print(f"date: {apod_data['date']}")
+                print(f"Explanation: {apod_data['explanation'][:300]}")
+                
             elif user_input == "3":
                 print("Listing all planets...")
-                get_all_planets(conn)
+                planets=get_all_planets(conn)
                 for planets in planets:
                     print(planets)
             
@@ -205,7 +244,7 @@ def main():
                 history = get_apod_history(conn)
                 for item in history:
                     print(item['id'])
-                    print(['title'])
+                    print(item['title'])
                     print(item['date'])
                     print(item['url'])
                     print(item['fetched_at'])
