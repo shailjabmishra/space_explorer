@@ -5,6 +5,7 @@ import yaml
 import urllib.request
 import psycopg2
 
+
 def get_connection(db_config:dict):
     try:
         connection = psycopg2.connect(
@@ -77,6 +78,7 @@ def get_all_planets(conn)-> list:
         ]
     return planets_list
 
+
 def mark_planet_visited(conn, planet_name: str) -> bool:
     with conn.cursor as cur:
         cur.execute(
@@ -145,6 +147,9 @@ def main():
     db_config = CONFIG['Database']
     planets = CONFIG['planets']
     conn = None
+    with urllib.request.urlopen("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY") as response:
+        data = response.read().decode("utf-8")  # bytes → string
+        apod_data = json.loads(data)
     try:
         conn = get_connection(db_config)
         create_table(conn)
@@ -174,12 +179,10 @@ def main():
             elif user_input == "2":
                 print("Getting NASA Astronomy Picture of the Day...")
                 try:
-                    with urllib.request.urlopen("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY") as response:
-                        data = response.read().decode("utf-8")  # bytes → string
-                        data_dict = json.loads(data)
-                        print(f"Title: {data_dict['title']}")
-                        print(f"date: {data_dict['date']}")
-                        print(f"Explanation: {data_dict['explanation'][:300]}")
+                    
+                    print(f"Title: {apod_data['title']}")
+                    print(f"date: {apod_data['date']}")
+                    print(f"Explanation: {apod_data['explanation'][:300]}")
                 except Exception as e:
                     print(f"Error occurred while fetching NASA APOD: {e}")
             elif user_input == "3":
@@ -199,9 +202,13 @@ def main():
                 delete_planet(conn,planet_name)
 
             elif user_input == '6':
-                apod_data = get_apod_history(conn)
-                for data in apod_data:
-                    print(data)
+                history = get_apod_history(conn)
+                for item in history:
+                    print(item['id'])
+                    print(['title'])
+                    print(item['date'])
+                    print(item['url'])
+                    print(item['fetched_at'])
 
             elif user_input == "q":
                 print("Quitting...")
