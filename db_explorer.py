@@ -21,7 +21,7 @@ def get_connection(db_config:dict):
     
 
 def create_table(conn):
-    with conn.cursor as cur:
+    with conn.cursor() as cur:
         cur.execute(""" 
             CREATE TABLE IF NOT EXISTS planets (
         id        SERIAL PRIMARY KEY,
@@ -47,7 +47,7 @@ def create_table(conn):
         conn.commit()
 
 def seed_planets_from_config(conn , planets:list):
-    with conn.cursor as cur:
+    with conn.cursor() as cur:
         cur.executemany(
             """
             INSERT  INTO planets (id,name,distance_from_sun_km,moons,fun_fact,visited)
@@ -58,7 +58,7 @@ def seed_planets_from_config(conn , planets:list):
         conn.commit()
 
 def get_all_planets(conn)-> list:
-    with conn.cursor as cur:
+    with conn.cursor() as cur:
         cur.execute(
             """
             select id , name , distance_from_sun_km, moons,fun_fact,visited 
@@ -80,7 +80,7 @@ def get_all_planets(conn)-> list:
 
 
 def mark_planet_visited(conn, planet_name: str) -> bool:
-    with conn.cursor as cur:
+    with conn.cursor() as cur:
         cur.execute(
             """
             UPDATE planets 
@@ -95,7 +95,7 @@ def mark_planet_visited(conn, planet_name: str) -> bool:
     conn.commit()
 
 def delete_planet(conn, planet_name: str) -> bool:
-    with conn.cursor as cur:
+    with conn.cursor() as cur:
         cur.execute(
             """
             DELETE from planets
@@ -107,7 +107,7 @@ def delete_planet(conn, planet_name: str) -> bool:
     conn.commit()
 
 def save_apod(conn,apod_data: dict):
-    with conn.cursor as cur:
+    with conn.cursor() as cur:
         cur.executemany(
             """
             INSERT  INTO apod_history (id,title,date,url)
@@ -118,7 +118,7 @@ def save_apod(conn,apod_data: dict):
         conn.commit()
 
 def get_apod_history(conn) -> list:
-    with conn.cursor as cur:
+    with conn.cursor() as cur:
         cur.execute(
             """
             select id , title,date,url,fetched_at
@@ -144,7 +144,7 @@ def main():
             config = yaml.safe_load(f)
             return config
     CONFIG = read_config()
-    db_config = CONFIG['Database']
+    db_config = CONFIG['database']
     planets = CONFIG['planets']
     conn = None
     with urllib.request.urlopen("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY") as response:
